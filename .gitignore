@@ -148,6 +148,10 @@ venv.bak/
 .spyderproject
 .spyproject
 
+# secrets
+.env
+.env.*
+
 # Rope project settings
 .ropeproject
 
