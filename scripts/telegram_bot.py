@@ -10,20 +10,26 @@ from telegram.ext import (
 )
 from dotenv import load_dotenv
 
-# ---------- bootstrap ----------
+# ==== bootstrap ====
 load_dotenv()
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 CONFIG_PATH = Path("configs/config.json")
 CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
 
-# states simples para o fluxo de busca
+# ==== states p/ fluxos ====
 ASK_TERM = "ASK_TERM"
 ASK_STOCK = "ASK_STOCK"
+ASK_SKU = "ASK_SKU"
+ASK_SCRIPT_MODE = "ASK_SCRIPT_MODE"
+ASK_SCRIPT_MANUAL = "ASK_SCRIPT_MANUAL"
+ASK_SCRIPT_NICHE = "ASK_SCRIPT_NICHE"
+ASK_SCRIPT_SCENARIO = "ASK_SCRIPT_SCENARIO"
+ASK_SCRIPT_STYLE = "ASK_SCRIPT_STYLE"
 
-# ---------- modelos de config ----------
+# ==== modelos de config ====
 @dataclass
 class GlobalCfg:
-    vpd: int = 3          # vídeos por dia
+    vpd: int = 3          # vídeos/dia
     avg_views: int = 5000 # views/vídeo
     ctr: float = 0.04     # 4%
     conv: float = 0.02    # 2%
@@ -49,7 +55,7 @@ def save_state(st: State):
 
 STATE = load_state()
 
-# ---------- mock de catálogo (trocaremos por API) ----------
+# ==== catálogo MOCK (trocaremos por API) ====
 CATALOG: List[Dict] = [
     {"sku": "EL-TRIMPRO", "name": "Aparador Pro 5-em-1", "stock": 520, "price": 129.90},
     {"sku": "HM-STEAMX", "name": "Vaporizador Portátil X", "stock": 140, "price": 189.00},
@@ -58,7 +64,7 @@ CATALOG: List[Dict] = [
     {"sku": "PT-LINTGO", "name": "Removedor de Fiapos",    "stock": 360, "price": 79.90 },
 ]
 
-# ---------- helpers ----------
+# ==== helpers ====
 def esc(s: str) -> str:
     return html.escape(str(s), quote=False)
 
@@ -128,7 +134,11 @@ def _matches(p: Dict, term: str) -> bool:
     t = term.lower()
     return t in p["sku"].lower() or t in p["name"].lower()
 
-# ---------- bot handlers ----------
+# ==== imports do pipeline de vídeo ====
+from services.video.generate import generate_video
+from services.video.autoscript import build_auto_script
+
+# ==== handlers ====
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
         [InlineKeyboardButton("📈 Pesquisar Produtos (ROI+Estoque)", callback_data='search_flow')],
@@ -142,7 +152,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
 
-# fluxo interativo: term -> stock_min -> resultado
 async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
@@ -153,42 +162,40 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await q.edit_message_text(
             text="🧭 Digite a <b>palavra‑chave ou categoria</b> para filtrar produtos:",
             parse_mode="HTML"
-        )
-        return
+        ); return
 
     elif q.data == 'generate':
-        await q.edit_message_text(text="🎬 Gerando vídeo de <b>teste</b>… (placeholder)", parse_mode="HTML")
+        context.user_data[ASK_SKU] = True
+        await q.edit_message_text(
+            text=("🎬 Qual <b>SKU</b> você quer transformar em vídeo?\n"
+                  "Ex.: KT-AIRFRY, EL-TRIMPRO…"),
+            parse_mode="HTML"
+        ); return
 
     elif q.data == 'post':
-        await q.edit_message_text(text="🚀 Preparando postagem no TikTok… (placeholder)", parse_mode="HTML")
+        await q.edit_message_text(text="🚀 Preparando postagem no TikTok… (placeholder)", parse_mode="HTML"); return
 
     elif q.data == 'metrics':
-        await q.edit_message_text(text="📊 Métricas mock: Views=5.000 | CTR=4% | Conv=2% | ROI=positivo (placeholder)", parse_mode="HTML")
+        await q.edit_message_text(text="📊 Métricas mock: Views=5.000 | CTR=4% | Conv=2% | ROI=positivo (placeholder)", parse_mode="HTML"); return
 
 async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Gerencia as etapas do fluxo interativo de busca."""
     msg = (update.message.text or "").strip()
 
-    # 1) receber termo
+    # ==== fluxo search (term -> stock) ====
     if context.user_data.get(ASK_TERM):
         context.user_data["term"] = msg
         context.user_data.pop(ASK_TERM, None)
         context.user_data[ASK_STOCK] = True
         await update.message.reply_text(
-            "📦 Estoque mínimo para considerar? (ex.: 100)\n"
-            "Dica: envie um número inteiro.",
+            "📦 Estoque mínimo para considerar? (ex.: 100)\nDica: envie um número inteiro.",
             parse_mode="HTML"
-        )
-        return
+        ); return
 
-    # 2) receber estoque mínimo
     if context.user_data.get(ASK_STOCK):
         try:
             stock_min = int(float(msg))
         except ValueError:
-            await update.message.reply_text("Valor inválido. Envie um número, ex.: <b>100</b>.", parse_mode="HTML")
-            return
-
+            await update.message.reply_text("Valor inválido. Envie um número, ex.: <b>100</b>.", parse_mode="HTML"); return
         term = context.user_data.get("term", "")
         context.user_data.pop(ASK_STOCK, None)
 
@@ -197,29 +204,108 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text(
                 f"🔎 Nada encontrado para <b>{esc(term)}</b> com estoque ≥ <b>{stock_min}</b>.",
                 parse_mode="HTML"
-            )
-            return
+            ); return
 
         ranked = rank_products(subset)[:10]
         lines = [f"<b>🔍 Resultados</b> para “{esc(term)}” com estoque ≥ {stock_min}"]
         for i, s in enumerate(ranked, 1):
-            cfg = s["cfg"]
-            flag = "⚠️" if s["stock"] < s["predicted_sales"] else "✅"
+            cfg = s["cfg"]; flag = "⚠️" if s["stock"] < s["predicted_sales"] else "✅"
             lines.append(
                 f"<b>{i}.</b> {esc(s['name'])} ({esc(s['sku'])})\n"
                 f"  Estoque: {s['stock']} {flag} | Prev.: {s['predicted_sales']} | Cap.: {s['cap_sales']}\n"
                 f"  Faturamento: {esc(fmt_money(s['gross']))} | Lucro: {esc(fmt_money(s['profit']))}\n"
                 f"  CFG: vpd={cfg.vpd} | avg_views={cfg.avg_views} | ctr={cfg.ctr:.2%} | conv={cfg.conv:.2%} | margin={cfg.margin:.2%} | days={cfg.days}"
             )
-        await update.message.reply_text("\n".join(lines), parse_mode="HTML")
+        await update.message.reply_text("\n".join(lines), parse_mode="HTML"); return
+
+    # ==== fluxo generate (SKU -> modo de roteiro -> manual OU IA -> render) ====
+    if context.user_data.get(ASK_SKU):
+        context.user_data["sku_for_video"] = msg.upper()
+        context.user_data.pop(ASK_SKU, None)
+        context.user_data[ASK_SCRIPT_MODE] = True
+        await update.message.reply_text(
+            "🧠 Escolha o modo de roteiro:\n"
+            "- Digite <b>manual</b> para colar seu texto\n"
+            "- Digite <b>auto</b> para gerar roteiro por IA (nicho/cenário)",
+            parse_mode="HTML"
+        ); return
+
+    if context.user_data.get(ASK_SCRIPT_MODE):
+        mode = msg.lower()
+        if mode.startswith("man"):
+            context.user_data.pop(ASK_SCRIPT_MODE, None)
+            context.user_data[ASK_SCRIPT_MANUAL] = True
+            await update.message.reply_text("📝 Envie o <b>script/roteiro</b> (~35s).", parse_mode="HTML"); return
+        elif mode.startswith("auto"):
+            context.user_data.pop(ASK_SCRIPT_MODE, None)
+            context.user_data[ASK_SCRIPT_NICHE] = True
+            await update.message.reply_text(
+                "🎯 Qual é o <b>nicho</b>? (ex.: cozinha, beleza, fitness, pet, casa, gadgets)",
+                parse_mode="HTML"
+            ); return
+        else:
+            await update.message.reply_text("Opção inválida. Digite <b>manual</b> ou <b>auto</b>.", parse_mode="HTML"); return
+
+    # manual
+    if context.user_data.get(ASK_SCRIPT_MANUAL):
+        context.user_data.pop(ASK_SCRIPT_MANUAL, None)
+        sku = context.user_data.get("sku_for_video", "SKU")
+        script_text = msg.strip()
+        await update.message.reply_text("⏱️ Renderizando…")
+        out = generate_video(product_name=sku, script_text=script_text, out_dir=Path(f"outputs/{sku}"))
+        try:
+            await update.message.reply_video(video=open(out, "rb"), caption=f"✅ Vídeo gerado ({sku})")
+        except Exception:
+            await update.message.reply_text(f"✅ Vídeo gerado: {out}")
         return
 
-    # fallback: se mandar texto fora do fluxo, sugira o /search direto
-    if msg.startswith("/"):
-        return  # outros comandos serão tratados pelos handlers
-    await update.message.reply_text("Use o menu ou o comando /search termo.", parse_mode="HTML")
+    # IA (auto): pedir nicho -> cenário -> estilo -> gerar
+    if context.user_data.get(ASK_SCRIPT_NICHE):
+        context.user_data["niche"] = msg.lower().strip()
+        context.user_data.pop(ASK_SCRIPT_NICHE, None)
+        context.user_data[ASK_SCRIPT_SCENARIO] = True
+        await update.message.reply_text(
+            "🏙️ Qual <b>cenário</b> do vídeo? (ex.: cozinha pequena, academia, banho, mesa da sala, escritório)",
+            parse_mode="HTML"
+        ); return
 
-# comandos utilitários
+    if context.user_data.get(ASK_SCRIPT_SCENARIO):
+        context.user_data["scenario"] = msg.lower().strip()
+        context.user_data.pop(ASK_SCRIPT_SCENARIO, None)
+        context.user_data[ASK_SCRIPT_STYLE] = True
+        await update.message.reply_text(
+            "🎨 Estilo do gancho? (ex.: dor→benefício, prova social, demonstração rápida)",
+            parse_mode="HTML"
+        ); return
+
+    if context.user_data.get(ASK_SCRIPT_STYLE):
+        context.user_data.pop(ASK_SCRIPT_STYLE, None)
+        sku = context.user_data.get("sku_for_video", "SKU")
+        niche = context.user_data.get("niche", "geral")
+        scenario = context.user_data.get("scenario", "casa")
+        style = msg.lower().strip()
+
+        # gerar roteiro automático
+        script_text = build_auto_script(
+            product_sku=sku, product_name=sku, niche=niche,
+            scenario=scenario, style=style, seconds=35
+        )
+        await update.message.reply_text(
+            f"🧾 Roteiro IA gerado:\n\n<code>{esc(script_text)}</code>\n\n"
+            "Renderizando…", parse_mode="HTML"
+        )
+        out = generate_video(product_name=sku, script_text=script_text, out_dir=Path(f"outputs/{sku}"))
+        try:
+            await update.message.reply_video(video=open(out, "rb"), caption=f"✅ Vídeo gerado ({sku})")
+        except Exception:
+            await update.message.reply_text(f"✅ Vídeo gerado: {out}")
+        return
+
+    # fallback
+    if not msg.startswith("/"):
+        await update.message.reply_text("Use o menu ou /search termo.", parse_mode="HTML")
+
+# ===== comandos utilitários =====
 async def cmd_showconfig(update: Update, context: ContextTypes.DEFAULT_TYPE):
     cfg = STATE.global_cfg
     msg = ("🧩 <b>Config Global Atual</b>\n" +
@@ -235,8 +321,7 @@ async def cmd_config(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(
             "Use: <code>/config vpd=3, avg_views=6000, ctr=0.04, conv=0.02, margin=0.30, days=30</code>\n"
             "Valores de % aceitam <code>0.05</code> ou <code>5%</code>.",
-            parse_mode="HTML")
-        return
+            parse_mode="HTML"); return
     for k, v in kv.items():
         setattr(STATE.global_cfg, k, v)
     save_state(STATE)
@@ -247,39 +332,28 @@ async def cmd_configsku(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(
             "Use: <code>/configsku EL-TRIMPRO vpd=4, avg_views=7000, ctr=0.05</code>\n"
             "Remover override: <code>/configsku EL-TRIMPRO clear</code>",
-            parse_mode="HTML")
-        return
+            parse_mode="HTML"); return
     sku = context.args[0].upper()
     if len(context.args) == 2 and context.args[1].lower() == "clear":
-        STATE.per_sku.pop(sku, None)
-        save_state(STATE)
-        await update.message.reply_text(f"♻️ Overrides removidos para {esc(sku)}.", parse_mode="HTML")
-        return
+        STATE.per_sku.pop(sku, None); save_state(STATE)
+        await update.message.reply_text(f"♻️ Overrides removidos para {esc(sku)}.", parse_mode="HTML"); return
     kv = parse_kv(" ".join(context.args[1:]))
     if not kv:
-        await update.message.reply_text("Nenhuma chave válida. Ex.: <code>ctr=0.05, conv=0.02</code>", parse_mode="HTML")
-        return
-    STATE.per_sku[sku] = {**STATE.per_sku.get(sku, {}), **kv}
-    save_state(STATE)
+        await update.message.reply_text("Nenhuma chave válida. Ex.: <code>ctr=0.05, conv=0.02</code>", parse_mode="HTML"); return
+    STATE.per_sku[sku] = {**STATE.per_sku.get(sku, {}), **kv}; save_state(STATE)
     await update.message.reply_text(f"✅ Override salvo para {esc(sku)}: {esc(STATE.per_sku[sku])}", parse_mode="HTML")
 
-# comando /search (rápido)
 async def cmd_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args:
-        await update.message.reply_text(
-            "Use: <code>/search airfryer</code> ou <code>/search vaporizador</code>",
-            parse_mode="HTML")
-        return
+        await update.message.reply_text("Use: <code>/search airfryer</code>", parse_mode="HTML"); return
     term = " ".join(context.args)
     subset = [p for p in CATALOG if _matches(p, term)]
     if not subset:
-        await update.message.reply_text(f"🔎 Nada encontrado para <b>{esc(term)}</b>.", parse_mode="HTML")
-        return
+        await update.message.reply_text(f"🔎 Nada encontrado para <b>{esc(term)}</b>.", parse_mode="HTML"); return
     ranked = rank_products(subset)[:10]
     lines = [f"<b>🔍 Resultados</b> para “{esc(term)}”"]
     for i, s in enumerate(ranked, 1):
-        cfg = s["cfg"]
-        flag = "⚠️" if s["stock"] < s["predicted_sales"] else "✅"
+        cfg = s["cfg"]; flag = "⚠️" if s["stock"] < s["predicted_sales"] else "✅"
         lines.append(
             f"<b>{i}.</b> {esc(s['name'])} ({esc(s['sku'])})\n"
             f"  Estoque: {s['stock']} {flag} | Prev.: {s['predicted_sales']} | Cap.: {s['cap_sales']}\n"
@@ -292,25 +366,14 @@ def main():
     if not TOKEN:
         raise SystemExit("TELEGRAM_BOT_TOKEN ausente no .env")
     app = ApplicationBuilder().token(TOKEN).build()
-
-    # comandos
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("showconfig", cmd_showconfig))
     app.add_handler(CommandHandler("config", cmd_config))
     app.add_handler(CommandHandler("configsku", cmd_configsku))
     app.add_handler(CommandHandler("search", cmd_search))
-
-    # botões do menu (inclui entrada do fluxo interativo)
     app.add_handler(CallbackQueryHandler(button))
-
-    # handler de texto para o fluxo de busca (term -> stock)
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
-
     app.run_polling()
 
 if __name__ == '__main__':
     main()
-
-
-
-

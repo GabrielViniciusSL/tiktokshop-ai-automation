@@ -1,0 +1,17 @@
+{
+  "global_cfg": {
+    "vpd": 3,
+    "avg_views": 5000,
+    "ctr": 0.04,
+    "conv": 0.02,
+    "margin": 0.3,
+    "days": 30
+  },
+  "per_sku": {
+    "EL-TRIMPRO": {
+      "vpd": 4,
+      "avg_views": 7000,
+      "ctr": 0.05
+    }
+  }
+}
