@@ -16,7 +16,7 @@ TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 CONFIG_PATH = Path("configs/config.json")
 CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
 
-# ==== states p/ fluxos ====
+# ==== states ====
 ASK_TERM = "ASK_TERM"
 ASK_STOCK = "ASK_STOCK"
 ASK_SKU = "ASK_SKU"
@@ -26,20 +26,28 @@ ASK_SCRIPT_NICHE = "ASK_SCRIPT_NICHE"
 ASK_SCRIPT_SCENARIO = "ASK_SCRIPT_SCENARIO"
 ASK_SCRIPT_STYLE = "ASK_SCRIPT_STYLE"
 
+# Remix
+ASK_REMIX_URL = "ASK_REMIX_URL"
+ASK_REMIX_MODE = "ASK_REMIX_MODE"
+ASK_REMIX_SCRIPT = "ASK_REMIX_SCRIPT"
+ASK_REMIX_NICHE = "ASK_REMIX_NICHE"
+ASK_REMIX_SCENARIO = "ASK_REMIX_SCENARIO"
+ASK_REMIX_STYLE = "ASK_REMIX_STYLE"
+
 # ==== modelos de config ====
 @dataclass
 class GlobalCfg:
-    vpd: int = 3          # vídeos/dia
-    avg_views: int = 5000 # views/vídeo
-    ctr: float = 0.04     # 4%
-    conv: float = 0.02    # 2%
-    margin: float = 0.30  # 30%
-    days: int = 30        # horizonte (dias)
+    vpd: int = 3
+    avg_views: int = 5000
+    ctr: float = 0.04
+    conv: float = 0.02
+    margin: float = 0.30
+    days: int = 30
 
 @dataclass
 class State:
     global_cfg: GlobalCfg
-    per_sku: Dict[str, Dict]  # overrides por SKU
+    per_sku: Dict[str, Dict]
 
 def load_state() -> State:
     if CONFIG_PATH.exists():
@@ -55,7 +63,7 @@ def save_state(st: State):
 
 STATE = load_state()
 
-# ==== catálogo MOCK (trocaremos por API) ====
+# ==== catálogo MOCK ====
 CATALOG: List[Dict] = [
     {"sku": "EL-TRIMPRO", "name": "Aparador Pro 5-em-1", "stock": 520, "price": 129.90},
     {"sku": "HM-STEAMX", "name": "Vaporizador Portátil X", "stock": 140, "price": 189.00},
@@ -71,7 +79,7 @@ def esc(s: str) -> str:
 def fmt_money(v: float) -> str:
     return f"R$ {v:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
-def cfg_for_sku(sku: str) -> GlobalCfg:
+def cfg_for_sku(sku: str):
     override = STATE.per_sku.get(sku.upper(), {})
     base = STATE.global_cfg
     return GlobalCfg(
@@ -134,21 +142,23 @@ def _matches(p: Dict, term: str) -> bool:
     t = term.lower()
     return t in p["sku"].lower() or t in p["name"].lower()
 
-# ==== imports do pipeline de vídeo ====
+# ==== pipeline de vídeo ====
 from services.video.generate import generate_video
 from services.video.autoscript import build_auto_script
+from services.video.remix import remix_from_tiktok
 
 # ==== handlers ====
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
         [InlineKeyboardButton("📈 Pesquisar Produtos (ROI+Estoque)", callback_data='search_flow')],
         [InlineKeyboardButton("🎬 Gerar Vídeo", callback_data='generate')],
+        [InlineKeyboardButton("🌀 Remix de TikTok", callback_data='remix')],
         [InlineKeyboardButton("🚀 Postar no TikTok", callback_data='post')],
         [InlineKeyboardButton("📊 Ver Métricas", callback_data='metrics')]
     ]
     await update.message.reply_text(
         "Bem-vindo ao TikTokShop AI Bot. Escolha uma opção:\n"
-        "Comandos: /search termo  |  /showconfig  |  /config  |  /configsku",
+        "Comandos: /search termo  |  /remix URL  |  /showconfig  |  /config  |  /configsku",
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
 
@@ -167,8 +177,14 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif q.data == 'generate':
         context.user_data[ASK_SKU] = True
         await q.edit_message_text(
-            text=("🎬 Qual <b>SKU</b> você quer transformar em vídeo?\n"
-                  "Ex.: KT-AIRFRY, EL-TRIMPRO…"),
+            text=("🎬 Qual <b>SKU</b> você quer transformar em vídeo?\nEx.: KT-AIRFRY, EL-TRIMPRO…"),
+            parse_mode="HTML"
+        ); return
+
+    elif q.data == 'remix':
+        context.user_data[ASK_REMIX_URL] = True
+        await q.edit_message_text(
+            "🌀 Envie a <b>URL</b> do vídeo do TikTok do produto.",
             parse_mode="HTML"
         ); return
 
@@ -181,15 +197,12 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = (update.message.text or "").strip()
 
-    # ==== fluxo search (term -> stock) ====
+    # ==== fluxo search ====
     if context.user_data.get(ASK_TERM):
         context.user_data["term"] = msg
         context.user_data.pop(ASK_TERM, None)
         context.user_data[ASK_STOCK] = True
-        await update.message.reply_text(
-            "📦 Estoque mínimo para considerar? (ex.: 100)\nDica: envie um número inteiro.",
-            parse_mode="HTML"
-        ); return
+        await update.message.reply_text("📦 Estoque mínimo para considerar? (ex.: 100)\nDica: envie um número inteiro.", parse_mode="HTML"); return
 
     if context.user_data.get(ASK_STOCK):
         try:
@@ -201,10 +214,7 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         subset = [p for p in CATALOG if _matches(p, term) and p["stock"] >= stock_min]
         if not subset:
-            await update.message.reply_text(
-                f"🔎 Nada encontrado para <b>{esc(term)}</b> com estoque ≥ <b>{stock_min}</b>.",
-                parse_mode="HTML"
-            ); return
+            await update.message.reply_text(f"🔎 Nada encontrado para <b>{esc(term)}</b> com estoque ≥ <b>{stock_min}</b>.", parse_mode="HTML"); return
 
         ranked = rank_products(subset)[:10]
         lines = [f"<b>🔍 Resultados</b> para “{esc(term)}” com estoque ≥ {stock_min}"]
@@ -218,15 +228,13 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
         await update.message.reply_text("\n".join(lines), parse_mode="HTML"); return
 
-    # ==== fluxo generate (SKU -> modo de roteiro -> manual OU IA -> render) ====
+    # ==== gerar vídeo (SKU -> modo) ====
     if context.user_data.get(ASK_SKU):
         context.user_data["sku_for_video"] = msg.upper()
         context.user_data.pop(ASK_SKU, None)
         context.user_data[ASK_SCRIPT_MODE] = True
         await update.message.reply_text(
-            "🧠 Escolha o modo de roteiro:\n"
-            "- Digite <b>manual</b> para colar seu texto\n"
-            "- Digite <b>auto</b> para gerar roteiro por IA (nicho/cenário)",
+            "🧠 Modo de roteiro: <b>manual</b> (colar texto) ou <b>auto</b> (IA por nicho/cenário)?",
             parse_mode="HTML"
         ); return
 
@@ -235,48 +243,37 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if mode.startswith("man"):
             context.user_data.pop(ASK_SCRIPT_MODE, None)
             context.user_data[ASK_SCRIPT_MANUAL] = True
-            await update.message.reply_text("📝 Envie o <b>script/roteiro</b> (~35s).", parse_mode="HTML"); return
+            await update.message.reply_text("📝 Envie o <b>roteiro</b> (~35s).", parse_mode="HTML"); return
         elif mode.startswith("auto"):
             context.user_data.pop(ASK_SCRIPT_MODE, None)
             context.user_data[ASK_SCRIPT_NICHE] = True
-            await update.message.reply_text(
-                "🎯 Qual é o <b>nicho</b>? (ex.: cozinha, beleza, fitness, pet, casa, gadgets)",
-                parse_mode="HTML"
-            ); return
+            await update.message.reply_text("🎯 Nicho (cozinha, beleza, fitness, pet, casa, gadgets)?", parse_mode="HTML"); return
         else:
-            await update.message.reply_text("Opção inválida. Digite <b>manual</b> ou <b>auto</b>.", parse_mode="HTML"); return
+            await update.message.reply_text("Digite <b>manual</b> ou <b>auto</b>.", parse_mode="HTML"); return
 
-    # manual
+    # roteiro manual
     if context.user_data.get(ASK_SCRIPT_MANUAL):
         context.user_data.pop(ASK_SCRIPT_MANUAL, None)
         sku = context.user_data.get("sku_for_video", "SKU")
         script_text = msg.strip()
         await update.message.reply_text("⏱️ Renderizando…")
         out = generate_video(product_name=sku, script_text=script_text, out_dir=Path(f"outputs/{sku}"))
-        try:
-            await update.message.reply_video(video=open(out, "rb"), caption=f"✅ Vídeo gerado ({sku})")
-        except Exception:
-            await update.message.reply_text(f"✅ Vídeo gerado: {out}")
+        try: await update.message.reply_video(video=open(out, "rb"), caption=f"✅ Vídeo gerado ({sku})")
+        except Exception: await update.message.reply_text(f"✅ Vídeo gerado: {out}")
         return
 
-    # IA (auto): pedir nicho -> cenário -> estilo -> gerar
+    # roteiro IA p/ geração normal
     if context.user_data.get(ASK_SCRIPT_NICHE):
         context.user_data["niche"] = msg.lower().strip()
         context.user_data.pop(ASK_SCRIPT_NICHE, None)
         context.user_data[ASK_SCRIPT_SCENARIO] = True
-        await update.message.reply_text(
-            "🏙️ Qual <b>cenário</b> do vídeo? (ex.: cozinha pequena, academia, banho, mesa da sala, escritório)",
-            parse_mode="HTML"
-        ); return
+        await update.message.reply_text("🏙️ Cenário (cozinha pequena, academia, banho, sala, escritório…)?", parse_mode="HTML"); return
 
     if context.user_data.get(ASK_SCRIPT_SCENARIO):
         context.user_data["scenario"] = msg.lower().strip()
         context.user_data.pop(ASK_SCRIPT_SCENARIO, None)
         context.user_data[ASK_SCRIPT_STYLE] = True
-        await update.message.reply_text(
-            "🎨 Estilo do gancho? (ex.: dor→benefício, prova social, demonstração rápida)",
-            parse_mode="HTML"
-        ); return
+        await update.message.reply_text("🎨 Estilo (dor→benefício, prova social, demonstração rápida)?", parse_mode="HTML"); return
 
     if context.user_data.get(ASK_SCRIPT_STYLE):
         context.user_data.pop(ASK_SCRIPT_STYLE, None)
@@ -284,28 +281,83 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         niche = context.user_data.get("niche", "geral")
         scenario = context.user_data.get("scenario", "casa")
         style = msg.lower().strip()
-
-        # gerar roteiro automático
-        script_text = build_auto_script(
-            product_sku=sku, product_name=sku, niche=niche,
-            scenario=scenario, style=style, seconds=35
-        )
-        await update.message.reply_text(
-            f"🧾 Roteiro IA gerado:\n\n<code>{esc(script_text)}</code>\n\n"
-            "Renderizando…", parse_mode="HTML"
-        )
+        script_text = build_auto_script(sku, sku, niche, scenario, style, seconds=35)
+        await update.message.reply_text(f"🧾 Roteiro IA:\n\n<code>{esc(script_text)}</code>\n\nRenderizando…", parse_mode="HTML")
         out = generate_video(product_name=sku, script_text=script_text, out_dir=Path(f"outputs/{sku}"))
-        try:
-            await update.message.reply_video(video=open(out, "rb"), caption=f"✅ Vídeo gerado ({sku})")
-        except Exception:
-            await update.message.reply_text(f"✅ Vídeo gerado: {out}")
+        try: await update.message.reply_video(video=open(out, "rb"), caption=f"✅ Vídeo gerado ({sku})")
+        except Exception: await update.message.reply_text(f"✅ Vídeo gerado: {out}")
         return
+
+    # ==== REMIX ====
+    if context.user_data.get(ASK_REMIX_URL):
+        context.user_data.pop(ASK_REMIX_URL, None)
+        context.user_data["remix_url"] = msg.strip()
+        context.user_data[ASK_REMIX_MODE] = True
+        await update.message.reply_text("Modo de roteiro do remix: <b>manual</b> ou <b>auto</b>?", parse_mode="HTML"); return
+
+    if context.user_data.get(ASK_REMIX_MODE):
+        mode = msg.lower().strip()
+        if mode.startswith("man"):
+            context.user_data.pop(ASK_REMIX_MODE, None)
+            context.user_data[ASK_REMIX_SCRIPT] = True
+            await update.message.reply_text("📝 Envie o <b>roteiro</b> para narrar no remix (~35s).", parse_mode="HTML"); return
+        elif mode.startswith("auto"):
+            context.user_data.pop(ASK_REMIX_MODE, None)
+            context.user_data[ASK_REMIX_NICHE] = True
+            await update.message.reply_text("🎯 Nicho (cozinha, beleza, fitness, pet, casa, gadgets)?", parse_mode="HTML"); return
+        else:
+            await update.message.reply_text("Digite <b>manual</b> ou <b>auto</b>.", parse_mode="HTML"); return
+
+    if context.user_data.get(ASK_REMIX_SCRIPT):
+        context.user_data.pop(ASK_REMIX_SCRIPT, None)
+        url = context.user_data.get("remix_url")
+        sku = "REMIX-" + (url.split("/")[-1][:10] if url else "SKU")
+        await update.message.reply_text("⏱️ Baixando e renderizando remix…")
+        out = remix_from_tiktok(url=url, sku=sku, out_root=Path(f"outputs/{sku}"), script_text=msg.strip())
+        try: await update.message.reply_video(video=open(out, "rb"), caption=f"✅ Remix gerado")
+        except Exception: await update.message.reply_text(f"✅ Remix gerado: {out}")
+        return
+
+    if context.user_data.get(ASK_REMIX_NICHE):
+        context.user_data["remix_niche"] = msg.lower().strip()
+        context.user_data.pop(ASK_REMIX_NICHE, None)
+        context.user_data[ASK_REMIX_SCENARIO] = True
+        await update.message.reply_text("🏙️ Cenário (cozinha pequena, academia, banho, sala, escritório…)?", parse_mode="HTML"); return
+
+    if context.user_data.get(ASK_REMIX_SCENARIO):
+        context.user_data["remix_scenario"] = msg.lower().strip()
+        context.user_data.pop(ASK_REMIX_SCENARIO, None)
+        context.user_data[ASK_REMIX_STYLE] = True
+        await update.message.reply_text("🎨 Estilo (dor→benefício, prova social, demonstração rápida)?", parse_mode="HTML"); return
+
+    if context.user_data.get(ASK_REMIX_STYLE):
+        context.user_data.pop(ASK_REMIX_STYLE, None)
+        url = context.user_data.get("remix_url")
+        sku = "REMIX-" + (url.split("/")[-1][:10] if url else "SKU")
+        params = dict(
+            product_name=sku,
+            niche=context.user_data.get("remix_niche","geral"),
+            scenario=context.user_data.get("remix_scenario","casa"),
+            style=msg.lower().strip(),
+            seconds=35
+        )
+        await update.message.reply_text("⏱️ Baixando e renderizando remix com IA…")
+        out = remix_from_tiktok(url=url, sku=sku, out_root=Path(f"outputs/{sku}"), autoscript_params=params)
+        try: await update.message.reply_video(video=open(out, "rb"), caption=f"✅ Remix gerado (IA)")
+        except Exception: await update.message.reply_text(f"✅ Remix gerado: {out}")
+        return
+
+    # detecção automática de link do tiktok
+    if "tiktok.com" in msg.lower():
+        context.user_data["remix_url"] = msg.strip()
+        context.user_data[ASK_REMIX_MODE] = True
+        await update.message.reply_text("Detectei um link. Roteiro do remix: <b>manual</b> ou <b>auto</b>?", parse_mode="HTML"); return
 
     # fallback
     if not msg.startswith("/"):
         await update.message.reply_text("Use o menu ou /search termo.", parse_mode="HTML")
 
-# ===== comandos utilitários =====
+# ==== comandos utilitários ====
 async def cmd_showconfig(update: Update, context: ContextTypes.DEFAULT_TYPE):
     cfg = STATE.global_cfg
     msg = ("🧩 <b>Config Global Atual</b>\n" +
@@ -362,6 +414,16 @@ async def cmd_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
     await update.message.reply_text("\n".join(lines), parse_mode="HTML")
 
+async def cmd_remix(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if context.args:
+        url = " ".join(context.args).strip()
+        context.user_data["remix_url"] = url
+        context.user_data[ASK_REMIX_MODE] = True
+        await update.message.reply_text("Modo de roteiro do remix: <b>manual</b> ou <b>auto</b>?", parse_mode="HTML")
+    else:
+        context.user_data[ASK_REMIX_URL] = True
+        await update.message.reply_text("🌀 Envie a URL do TikTok.", parse_mode="HTML")
+
 def main():
     if not TOKEN:
         raise SystemExit("TELEGRAM_BOT_TOKEN ausente no .env")
@@ -371,9 +433,11 @@ def main():
     app.add_handler(CommandHandler("config", cmd_config))
     app.add_handler(CommandHandler("configsku", cmd_configsku))
     app.add_handler(CommandHandler("search", cmd_search))
+    app.add_handler(CommandHandler("remix", cmd_remix))
     app.add_handler(CallbackQueryHandler(button))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
     app.run_polling()
 
 if __name__ == '__main__':
     main()
+
