@@ -1,0 +1,829 @@
+{
+  "meta": {
+    "name": "roteiros_base_9 + biblioteca_ctas",
+    "description": "Templates parametrizados para TikTok Shop: 3 ganchos x 3 nichos + CTAs",
+    "created_at": "2025-08-13T01:50:55",
+    "version": "1.0.0",
+    "author": "pipeline-bot"
+  },
+  "schema": {
+    "variables": [
+      "PRODUTO",
+      "NICHO",
+      "DOR_PRINCIPAL",
+      "BENEFICIO_PRINCIPAL",
+      "PROVA_SOCIAL_CURTA",
+      "PROVA_SOCIAL_FONTE",
+      "CENA_DEMO_1",
+      "CENA_DEMO_2",
+      "CENA_DEMO_3",
+      "DIFERENCIAL_CHAVE",
+      "CTA_VARIACAO",
+      "GARANTIA_CURTA",
+      "OFERTA_CURTA"
+    ],
+    "script_block_roles": [
+      "hook",
+      "setup",
+      "value",
+      "proof",
+      "disclaimer",
+      "narration",
+      "tip",
+      "context",
+      "social",
+      "cta"
+    ],
+    "placeholders_format": "{VARIAVEL_MAIUSCULA}",
+    "render_hints": "usar para posicionar legendas e CTAs",
+    "tts_guide_fields": [
+      "style",
+      "emotion",
+      "pace_wpm"
+    ]
+  },
+  "templates": [
+    {
+      "id": "beleza.dor_beneficio",
+      "niche": "Beleza & Cuidados",
+      "hook_type": "Dor → Benefício",
+      "lang": "pt-BR",
+      "duration_target_sec": [
+        28,
+        34
+      ],
+      "tts_guide": {
+        "style": "conversational",
+        "emotion": "empathetic",
+        "pace_wpm": 165
+      },
+      "visual_cues": [
+        "LEGENDAS_KARAOKE=True",
+        "SAFE_MARGINS=0.05",
+        "SUBTITLE_MAX_CHARS_PER_LINE=28",
+        "FONT_SCALE=1.0",
+        "OUTLINE=4",
+        "COLORWAY_BY_NICHE=True",
+        "LOWER_THIRDS=True",
+        "BROLL_PACK=True"
+      ],
+      "music_tags": [
+        "upbeat",
+        "catchy",
+        "lofi-pop",
+        "electro-lite",
+        "royalty-free"
+      ],
+      "variables": [
+        "PRODUTO",
+        "NICHO",
+        "DOR_PRINCIPAL",
+        "BENEFICIO_PRINCIPAL",
+        "PROVA_SOCIAL_CURTA",
+        "PROVA_SOCIAL_FONTE",
+        "CENA_DEMO_1",
+        "CENA_DEMO_2",
+        "CENA_DEMO_3",
+        "DIFERENCIAL_CHAVE",
+        "CTA_VARIACAO",
+        "GARANTIA_CURTA",
+        "OFERTA_CURTA"
+      ],
+      "script": [
+        {
+          "role": "hook",
+          "text": "[CLOSE-UP] Sofrendo com {DOR_PRINCIPAL}? Segura essa virada rápida."
+        },
+        {
+          "role": "setup",
+          "text": "Apresento {PRODUTO}: pensado pra {BENEFICIO_PRINCIPAL} no dia a dia."
+        },
+        {
+          "role": "value",
+          "text": "Diferencial? {DIFERENCIAL_CHAVE}. Sem complicar sua rotina."
+        },
+        {
+          "role": "proof",
+          "text": "Resultados reais começam com consistência — e zero promessas milagrosas."
+        },
+        {
+          "role": "cta",
+          "text": "Quer testar sem risco? {GARANTIA_CURTA}. {CTA_VARIACAO}."
+        }
+      ],
+      "compliance_notes": [
+        "Sem claims médicas/garantia de resultado; use linguagem de potencial/benefício provável.",
+        "Evitar comparativos absolutos (ex.: 'o melhor do mundo').",
+        "Se mencionar números, cite fonte em PROVA_SOCIAL_FONTE.",
+        "Evitar logos/músicas sem licença. Prefira biblioteca própria."
+      ],
+      "render_hints": {
+        "format": "1080x1920",
+        "max_lines_on_screen": 2,
+        "caption_style": "bold_highlight_keywords",
+        "safe_zones": "top_title, mid_caption, bottom_cta",
+        "cta_anchor": "product_link_enabled"
+      },
+      "created_at": "2025-08-13T01:50:55",
+      "version": "v1"
+    },
+    {
+      "id": "beleza.prova_social",
+      "niche": "Beleza & Cuidados",
+      "hook_type": "Prova Social",
+      "lang": "pt-BR",
+      "duration_target_sec": [
+        28,
+        34
+      ],
+      "tts_guide": {
+        "style": "authoritative",
+        "emotion": "confident",
+        "pace_wpm": 170
+      },
+      "visual_cues": [
+        "LEGENDAS_KARAOKE=True",
+        "SAFE_MARGINS=0.05",
+        "SUBTITLE_MAX_CHARS_PER_LINE=28",
+        "FONT_SCALE=1.0",
+        "OUTLINE=4",
+        "COLORWAY_BY_NICHE=True",
+        "LOWER_THIRDS=True",
+        "BROLL_PACK=True"
+      ],
+      "music_tags": [
+        "upbeat",
+        "catchy",
+        "lofi-pop",
+        "electro-lite",
+        "royalty-free"
+      ],
+      "variables": [
+        "PRODUTO",
+        "NICHO",
+        "DOR_PRINCIPAL",
+        "BENEFICIO_PRINCIPAL",
+        "PROVA_SOCIAL_CURTA",
+        "PROVA_SOCIAL_FONTE",
+        "CENA_DEMO_1",
+        "CENA_DEMO_2",
+        "CENA_DEMO_3",
+        "DIFERENCIAL_CHAVE",
+        "CTA_VARIACAO",
+        "GARANTIA_CURTA",
+        "OFERTA_CURTA"
+      ],
+      "script": [
+        {
+          "role": "hook",
+          "text": "[TEXT POP] \"{PROVA_SOCIAL_CURTA}\" — {PROVA_SOCIAL_FONTE}."
+        },
+        {
+          "role": "context",
+          "text": "Se {DOR_PRINCIPAL} te trava, {PRODUTO} ajuda a {BENEFICIO_PRINCIPAL}."
+        },
+        {
+          "role": "value",
+          "text": "Ponto-chave: {DIFERENCIAL_CHAVE}. Use diariamente."
+        },
+        {
+          "role": "disclaimer",
+          "text": "Resultados variam. Foque em hábitos + produto."
+        },
+        {
+          "role": "cta",
+          "text": "{OFERTA_CURTA}. {CTA_VARIACAO}."
+        }
+      ],
+      "compliance_notes": [
+        "Sem claims médicas/garantia de resultado; use linguagem de potencial/benefício provável.",
+        "Evitar comparativos absolutos (ex.: 'o melhor do mundo').",
+        "Se mencionar números, cite fonte em PROVA_SOCIAL_FONTE.",
+        "Evitar logos/músicas sem licença. Prefira biblioteca própria."
+      ],
+      "render_hints": {
+        "format": "1080x1920",
+        "max_lines_on_screen": 2,
+        "caption_style": "bold_highlight_keywords",
+        "safe_zones": "top_title, mid_caption, bottom_cta",
+        "cta_anchor": "product_link_enabled"
+      },
+      "created_at": "2025-08-13T01:50:55",
+      "version": "v1"
+    },
+    {
+      "id": "beleza.demo_rapida",
+      "niche": "Beleza & Cuidados",
+      "hook_type": "Demonstração Rápida",
+      "lang": "pt-BR",
+      "duration_target_sec": [
+        28,
+        34
+      ],
+      "tts_guide": {
+        "style": "energetic",
+        "emotion": "excited",
+        "pace_wpm": 180
+      },
+      "visual_cues": [
+        "LEGENDAS_KARAOKE=True",
+        "SAFE_MARGINS=0.05",
+        "SUBTITLE_MAX_CHARS_PER_LINE=28",
+        "FONT_SCALE=1.0",
+        "OUTLINE=4",
+        "COLORWAY_BY_NICHE=True",
+        "LOWER_THIRDS=True",
+        "BROLL_PACK=True"
+      ],
+      "music_tags": [
+        "upbeat",
+        "catchy",
+        "lofi-pop",
+        "electro-lite",
+        "royalty-free"
+      ],
+      "variables": [
+        "PRODUTO",
+        "NICHO",
+        "DOR_PRINCIPAL",
+        "BENEFICIO_PRINCIPAL",
+        "PROVA_SOCIAL_CURTA",
+        "PROVA_SOCIAL_FONTE",
+        "CENA_DEMO_1",
+        "CENA_DEMO_2",
+        "CENA_DEMO_3",
+        "DIFERENCIAL_CHAVE",
+        "CTA_VARIACAO",
+        "GARANTIA_CURTA",
+        "OFERTA_CURTA"
+      ],
+      "script": [
+        {
+          "role": "hook",
+          "text": "[TUTORIAL 3 PASSOS] 1) {CENA_DEMO_1} 2) {CENA_DEMO_2} 3) {CENA_DEMO_3}."
+        },
+        {
+          "role": "narration",
+          "text": "Com {PRODUTO}, você {BENEFICIO_PRINCIPAL} sem drama."
+        },
+        {
+          "role": "value",
+          "text": "Extra: {DIFERENCIAL_CHAVE}. Pele agradece."
+        },
+        {
+          "role": "tip",
+          "text": "Dica: aplique com leveza. Evite área sensível."
+        },
+        {
+          "role": "cta",
+          "text": "Curtiu o fluxo? {CTA_VARIACAO} — {OFERTA_CURTA}."
+        }
+      ],
+      "compliance_notes": [
+        "Sem claims médicas/garantia de resultado; use linguagem de potencial/benefício provável.",
+        "Evitar comparativos absolutos (ex.: 'o melhor do mundo').",
+        "Se mencionar números, cite fonte em PROVA_SOCIAL_FONTE.",
+        "Evitar logos/músicas sem licença. Prefira biblioteca própria."
+      ],
+      "render_hints": {
+        "format": "1080x1920",
+        "max_lines_on_screen": 2,
+        "caption_style": "bold_highlight_keywords",
+        "safe_zones": "top_title, mid_caption, bottom_cta",
+        "cta_anchor": "product_link_enabled"
+      },
+      "created_at": "2025-08-13T01:50:55",
+      "version": "v1"
+    },
+    {
+      "id": "saude.dor_beneficio",
+      "niche": "Saúde & Bem-estar",
+      "hook_type": "Dor → Benefício",
+      "lang": "pt-BR",
+      "duration_target_sec": [
+        28,
+        34
+      ],
+      "tts_guide": {
+        "style": "conversational",
+        "emotion": "empathetic",
+        "pace_wpm": 165
+      },
+      "visual_cues": [
+        "LEGENDAS_KARAOKE=True",
+        "SAFE_MARGINS=0.05",
+        "SUBTITLE_MAX_CHARS_PER_LINE=28",
+        "FONT_SCALE=1.0",
+        "OUTLINE=4",
+        "COLORWAY_BY_NICHE=True",
+        "LOWER_THIRDS=True",
+        "BROLL_PACK=True"
+      ],
+      "music_tags": [
+        "upbeat",
+        "catchy",
+        "lofi-pop",
+        "electro-lite",
+        "royalty-free"
+      ],
+      "variables": [
+        "PRODUTO",
+        "NICHO",
+        "DOR_PRINCIPAL",
+        "BENEFICIO_PRINCIPAL",
+        "PROVA_SOCIAL_CURTA",
+        "PROVA_SOCIAL_FONTE",
+        "CENA_DEMO_1",
+        "CENA_DEMO_2",
+        "CENA_DEMO_3",
+        "DIFERENCIAL_CHAVE",
+        "CTA_VARIACAO",
+        "GARANTIA_CURTA",
+        "OFERTA_CURTA"
+      ],
+      "script": [
+        {
+          "role": "hook",
+          "text": "[RELATE] Cansado(a) de {DOR_PRINCIPAL}? Respira: dá pra otimizar."
+        },
+        {
+          "role": "setup",
+          "text": "{PRODUTO} foi feito pra apoiar {BENEFICIO_PRINCIPAL}."
+        },
+        {
+          "role": "value",
+          "text": "O que muda? {DIFERENCIAL_CHAVE}. Simples e prático."
+        },
+        {
+          "role": "disclaimer",
+          "text": "Não é cura. É suporte na rotina. Procure orientação profissional quando necessário."
+        },
+        {
+          "role": "cta",
+          "text": "Comece leve: {GARANTIA_CURTA}. {CTA_VARIACAO}."
+        }
+      ],
+      "compliance_notes": [
+        "Sem claims médicas/garantia de resultado; use linguagem de potencial/benefício provável.",
+        "Evitar comparativos absolutos (ex.: 'o melhor do mundo').",
+        "Se mencionar números, cite fonte em PROVA_SOCIAL_FONTE.",
+        "Evitar logos/músicas sem licença. Prefira biblioteca própria."
+      ],
+      "render_hints": {
+        "format": "1080x1920",
+        "max_lines_on_screen": 2,
+        "caption_style": "bold_highlight_keywords",
+        "safe_zones": "top_title, mid_caption, bottom_cta",
+        "cta_anchor": "product_link_enabled"
+      },
+      "created_at": "2025-08-13T01:50:55",
+      "version": "v1"
+    },
+    {
+      "id": "saude.prova_social",
+      "niche": "Saúde & Bem-estar",
+      "hook_type": "Prova Social",
+      "lang": "pt-BR",
+      "duration_target_sec": [
+        28,
+        34
+      ],
+      "tts_guide": {
+        "style": "authoritative",
+        "emotion": "confident",
+        "pace_wpm": 170
+      },
+      "visual_cues": [
+        "LEGENDAS_KARAOKE=True",
+        "SAFE_MARGINS=0.05",
+        "SUBTITLE_MAX_CHARS_PER_LINE=28",
+        "FONT_SCALE=1.0",
+        "OUTLINE=4",
+        "COLORWAY_BY_NICHE=True",
+        "LOWER_THIRDS=True",
+        "BROLL_PACK=True"
+      ],
+      "music_tags": [
+        "upbeat",
+        "catchy",
+        "lofi-pop",
+        "electro-lite",
+        "royalty-free"
+      ],
+      "variables": [
+        "PRODUTO",
+        "NICHO",
+        "DOR_PRINCIPAL",
+        "BENEFICIO_PRINCIPAL",
+        "PROVA_SOCIAL_CURTA",
+        "PROVA_SOCIAL_FONTE",
+        "CENA_DEMO_1",
+        "CENA_DEMO_2",
+        "CENA_DEMO_3",
+        "DIFERENCIAL_CHAVE",
+        "CTA_VARIACAO",
+        "GARANTIA_CURTA",
+        "OFERTA_CURTA"
+      ],
+      "script": [
+        {
+          "role": "hook",
+          "text": "[DATA CARD] {PROVA_SOCIAL_CURTA} — {PROVA_SOCIAL_FONTE}."
+        },
+        {
+          "role": "context",
+          "text": "Para quem sente {DOR_PRINCIPAL}, {PRODUTO} pode auxiliar em {BENEFICIO_PRINCIPAL}."
+        },
+        {
+          "role": "value",
+          "text": "Destaque: {DIFERENCIAL_CHAVE}. Rotina > perfeição."
+        },
+        {
+          "role": "disclaimer",
+          "text": "Conteúdo informativo. Consulte profissional de saúde."
+        },
+        {
+          "role": "cta",
+          "text": "Pronto pra testar? {OFERTA_CURTA}. {CTA_VARIACAO}."
+        }
+      ],
+      "compliance_notes": [
+        "Sem claims médicas/garantia de resultado; use linguagem de potencial/benefício provável.",
+        "Evitar comparativos absolutos (ex.: 'o melhor do mundo').",
+        "Se mencionar números, cite fonte em PROVA_SOCIAL_FONTE.",
+        "Evitar logos/músicas sem licença. Prefira biblioteca própria."
+      ],
+      "render_hints": {
+        "format": "1080x1920",
+        "max_lines_on_screen": 2,
+        "caption_style": "bold_highlight_keywords",
+        "safe_zones": "top_title, mid_caption, bottom_cta",
+        "cta_anchor": "product_link_enabled"
+      },
+      "created_at": "2025-08-13T01:50:55",
+      "version": "v1"
+    },
+    {
+      "id": "saude.demo_rapida",
+      "niche": "Saúde & Bem-estar",
+      "hook_type": "Demonstração Rápida",
+      "lang": "pt-BR",
+      "duration_target_sec": [
+        28,
+        34
+      ],
+      "tts_guide": {
+        "style": "energetic",
+        "emotion": "excited",
+        "pace_wpm": 180
+      },
+      "visual_cues": [
+        "LEGENDAS_KARAOKE=True",
+        "SAFE_MARGINS=0.05",
+        "SUBTITLE_MAX_CHARS_PER_LINE=28",
+        "FONT_SCALE=1.0",
+        "OUTLINE=4",
+        "COLORWAY_BY_NICHE=True",
+        "LOWER_THIRDS=True",
+        "BROLL_PACK=True"
+      ],
+      "music_tags": [
+        "upbeat",
+        "catchy",
+        "lofi-pop",
+        "electro-lite",
+        "royalty-free"
+      ],
+      "variables": [
+        "PRODUTO",
+        "NICHO",
+        "DOR_PRINCIPAL",
+        "BENEFICIO_PRINCIPAL",
+        "PROVA_SOCIAL_CURTA",
+        "PROVA_SOCIAL_FONTE",
+        "CENA_DEMO_1",
+        "CENA_DEMO_2",
+        "CENA_DEMO_3",
+        "DIFERENCIAL_CHAVE",
+        "CTA_VARIACAO",
+        "GARANTIA_CURTA",
+        "OFERTA_CURTA"
+      ],
+      "script": [
+        {
+          "role": "hook",
+          "text": "[GUIDE] Como usar {PRODUTO} em 20s: {CENA_DEMO_1} → {CENA_DEMO_2} → {CENA_DEMO_3}."
+        },
+        {
+          "role": "narration",
+          "text": "Objetivo: {BENEFICIO_PRINCIPAL} sem complicar."
+        },
+        {
+          "role": "value",
+          "text": "Plus: {DIFERENCIAL_CHAVE}. Cabe em qualquer rotina."
+        },
+        {
+          "role": "disclaimer",
+          "text": "Não substitui diagnóstico/tratamento."
+        },
+        {
+          "role": "cta",
+          "text": "Se fizer sentido, {CTA_VARIACAO}. {GARANTIA_CURTA}."
+        }
+      ],
+      "compliance_notes": [
+        "Sem claims médicas/garantia de resultado; use linguagem de potencial/benefício provável.",
+        "Evitar comparativos absolutos (ex.: 'o melhor do mundo').",
+        "Se mencionar números, cite fonte em PROVA_SOCIAL_FONTE.",
+        "Evitar logos/músicas sem licença. Prefira biblioteca própria."
+      ],
+      "render_hints": {
+        "format": "1080x1920",
+        "max_lines_on_screen": 2,
+        "caption_style": "bold_highlight_keywords",
+        "safe_zones": "top_title, mid_caption, bottom_cta",
+        "cta_anchor": "product_link_enabled"
+      },
+      "created_at": "2025-08-13T01:50:55",
+      "version": "v1"
+    },
+    {
+      "id": "tech.dor_beneficio",
+      "niche": "Tecnologia & Gadgets",
+      "hook_type": "Dor → Benefício",
+      "lang": "pt-BR",
+      "duration_target_sec": [
+        28,
+        34
+      ],
+      "tts_guide": {
+        "style": "conversational",
+        "emotion": "empathetic",
+        "pace_wpm": 165
+      },
+      "visual_cues": [
+        "LEGENDAS_KARAOKE=True",
+        "SAFE_MARGINS=0.05",
+        "SUBTITLE_MAX_CHARS_PER_LINE=28",
+        "FONT_SCALE=1.0",
+        "OUTLINE=4",
+        "COLORWAY_BY_NICHE=True",
+        "LOWER_THIRDS=True",
+        "BROLL_PACK=True"
+      ],
+      "music_tags": [
+        "upbeat",
+        "catchy",
+        "lofi-pop",
+        "electro-lite",
+        "royalty-free"
+      ],
+      "variables": [
+        "PRODUTO",
+        "NICHO",
+        "DOR_PRINCIPAL",
+        "BENEFICIO_PRINCIPAL",
+        "PROVA_SOCIAL_CURTA",
+        "PROVA_SOCIAL_FONTE",
+        "CENA_DEMO_1",
+        "CENA_DEMO_2",
+        "CENA_DEMO_3",
+        "DIFERENCIAL_CHAVE",
+        "CTA_VARIACAO",
+        "GARANTIA_CURTA",
+        "OFERTA_CURTA"
+      ],
+      "script": [
+        {
+          "role": "hook",
+          "text": "[PROBLEM-SOLVER] {DOR_PRINCIPAL} te atrasando? Bora escalar a solução."
+        },
+        {
+          "role": "setup",
+          "text": "{PRODUTO} entrega {BENEFICIO_PRINCIPAL} on-the-go."
+        },
+        {
+          "role": "value",
+          "text": "Stack diferencial: {DIFERENCIAL_CHAVE}. Plug and play."
+        },
+        {
+          "role": "social",
+          "text": "Feedback real > hype. Itere pelo que funciona."
+        },
+        {
+          "role": "cta",
+          "text": "Quer hands-on? {OFERTA_CURTA}. {CTA_VARIACAO}."
+        }
+      ],
+      "compliance_notes": [
+        "Sem claims médicas/garantia de resultado; use linguagem de potencial/benefício provável.",
+        "Evitar comparativos absolutos (ex.: 'o melhor do mundo').",
+        "Se mencionar números, cite fonte em PROVA_SOCIAL_FONTE.",
+        "Evitar logos/músicas sem licença. Prefira biblioteca própria."
+      ],
+      "render_hints": {
+        "format": "1080x1920",
+        "max_lines_on_screen": 2,
+        "caption_style": "bold_highlight_keywords",
+        "safe_zones": "top_title, mid_caption, bottom_cta",
+        "cta_anchor": "product_link_enabled"
+      },
+      "created_at": "2025-08-13T01:50:55",
+      "version": "v1"
+    },
+    {
+      "id": "tech.prova_social",
+      "niche": "Tecnologia & Gadgets",
+      "hook_type": "Prova Social",
+      "lang": "pt-BR",
+      "duration_target_sec": [
+        28,
+        34
+      ],
+      "tts_guide": {
+        "style": "authoritative",
+        "emotion": "confident",
+        "pace_wpm": 170
+      },
+      "visual_cues": [
+        "LEGENDAS_KARAOKE=True",
+        "SAFE_MARGINS=0.05",
+        "SUBTITLE_MAX_CHARS_PER_LINE=28",
+        "FONT_SCALE=1.0",
+        "OUTLINE=4",
+        "COLORWAY_BY_NICHE=True",
+        "LOWER_THIRDS=True",
+        "BROLL_PACK=True"
+      ],
+      "music_tags": [
+        "upbeat",
+        "catchy",
+        "lofi-pop",
+        "electro-lite",
+        "royalty-free"
+      ],
+      "variables": [
+        "PRODUTO",
+        "NICHO",
+        "DOR_PRINCIPAL",
+        "BENEFICIO_PRINCIPAL",
+        "PROVA_SOCIAL_CURTA",
+        "PROVA_SOCIAL_FONTE",
+        "CENA_DEMO_1",
+        "CENA_DEMO_2",
+        "CENA_DEMO_3",
+        "DIFERENCIAL_CHAVE",
+        "CTA_VARIACAO",
+        "GARANTIA_CURTA",
+        "OFERTA_CURTA"
+      ],
+      "script": [
+        {
+          "role": "hook",
+          "text": "[REVIEWS SNAPSHOT] \"{PROVA_SOCIAL_CURTA}\" — {PROVA_SOCIAL_FONTE}."
+        },
+        {
+          "role": "context",
+          "text": "Pra dor de {DOR_PRINCIPAL}, {PRODUTO} habilita {BENEFICIO_PRINCIPAL}."
+        },
+        {
+          "role": "value",
+          "text": "Edge: {DIFERENCIAL_CHAVE}. Sem curva de aprendizado."
+        },
+        {
+          "role": "tip",
+          "text": "Ativa em 3 passos e roda liso."
+        },
+        {
+          "role": "cta",
+          "text": "Test drive agora: {CTA_VARIACAO} — {OFERTA_CURTA}."
+        }
+      ],
+      "compliance_notes": [
+        "Sem claims médicas/garantia de resultado; use linguagem de potencial/benefício provável.",
+        "Evitar comparativos absolutos (ex.: 'o melhor do mundo').",
+        "Se mencionar números, cite fonte em PROVA_SOCIAL_FONTE.",
+        "Evitar logos/músicas sem licença. Prefira biblioteca própria."
+      ],
+      "render_hints": {
+        "format": "1080x1920",
+        "max_lines_on_screen": 2,
+        "caption_style": "bold_highlight_keywords",
+        "safe_zones": "top_title, mid_caption, bottom_cta",
+        "cta_anchor": "product_link_enabled"
+      },
+      "created_at": "2025-08-13T01:50:55",
+      "version": "v1"
+    },
+    {
+      "id": "tech.demo_rapida",
+      "niche": "Tecnologia & Gadgets",
+      "hook_type": "Demonstração Rápida",
+      "lang": "pt-BR",
+      "duration_target_sec": [
+        28,
+        34
+      ],
+      "tts_guide": {
+        "style": "energetic",
+        "emotion": "excited",
+        "pace_wpm": 180
+      },
+      "visual_cues": [
+        "LEGENDAS_KARAOKE=True",
+        "SAFE_MARGINS=0.05",
+        "SUBTITLE_MAX_CHARS_PER_LINE=28",
+        "FONT_SCALE=1.0",
+        "OUTLINE=4",
+        "COLORWAY_BY_NICHE=True",
+        "LOWER_THIRDS=True",
+        "BROLL_PACK=True"
+      ],
+      "music_tags": [
+        "upbeat",
+        "catchy",
+        "lofi-pop",
+        "electro-lite",
+        "royalty-free"
+      ],
+      "variables": [
+        "PRODUTO",
+        "NICHO",
+        "DOR_PRINCIPAL",
+        "BENEFICIO_PRINCIPAL",
+        "PROVA_SOCIAL_CURTA",
+        "PROVA_SOCIAL_FONTE",
+        "CENA_DEMO_1",
+        "CENA_DEMO_2",
+        "CENA_DEMO_3",
+        "DIFERENCIAL_CHAVE",
+        "CTA_VARIACAO",
+        "GARANTIA_CURTA",
+        "OFERTA_CURTA"
+      ],
+      "script": [
+        {
+          "role": "hook",
+          "text": "[UNBOX/SETUP] {CENA_DEMO_1} → {CENA_DEMO_2} → {CENA_DEMO_3} (30s)."
+        },
+        {
+          "role": "narration",
+          "text": "Com {PRODUTO}, você ganha {BENEFICIO_PRINCIPAL} no dia 1."
+        },
+        {
+          "role": "value",
+          "text": "Diferencial: {DIFERENCIAL_CHAVE}. Compatível e rápido."
+        },
+        {
+          "role": "tip",
+          "text": "Pro-tip: atualize firmware/app pra melhor performance."
+        },
+        {
+          "role": "cta",
+          "text": "Curtiu? {CTA_VARIACAO}. {GARANTIA_CURTA}."
+        }
+      ],
+      "compliance_notes": [
+        "Sem claims médicas/garantia de resultado; use linguagem de potencial/benefício provável.",
+        "Evitar comparativos absolutos (ex.: 'o melhor do mundo').",
+        "Se mencionar números, cite fonte em PROVA_SOCIAL_FONTE.",
+        "Evitar logos/músicas sem licença. Prefira biblioteca própria."
+      ],
+      "render_hints": {
+        "format": "1080x1920",
+        "max_lines_on_screen": 2,
+        "caption_style": "bold_highlight_keywords",
+        "safe_zones": "top_title, mid_caption, bottom_cta",
+        "cta_anchor": "product_link_enabled"
+      },
+      "created_at": "2025-08-13T01:50:55",
+      "version": "v1"
+    }
+  ],
+  "cta_library": {
+    "conversion": [
+      "Toque no link e confira agora",
+      "Garantia de 7 dias — teste hoje",
+      "Últimas unidades — garanta o seu",
+      "Compre agora e ative o benefício",
+      "Frete rápido — peça já"
+    ],
+    "engagement": [
+      "Comente sua dúvida que eu respondo",
+      "Salve pra testar depois",
+      "Marque alguém que precisa ver isso",
+      "Qual versão você usaria?"
+    ],
+    "curiosity": [
+      "Descubra por que está esgotando",
+      "O truque que ninguém te contou",
+      "Veja o antes/depois nos comentários",
+      "Clique e veja em ação"
+    ],
+    "soft_compliance": [
+      "Resultados variam — veja se serve pra você",
+      "Use como apoio à sua rotina",
+      "Consulte um profissional quando necessário"
+    ]
+  }
+}
